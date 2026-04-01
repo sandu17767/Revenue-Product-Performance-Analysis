@@ -3,10 +3,11 @@
 ### Olist Brazilian E-Commerce &nbsp;|&nbsp; 2017–2018 &nbsp;|&nbsp; BigQuery SQL + Power BI
 
 ---
-
 ## 📊 Live Dashboard
 
-👉 [View Interactive Dashboard](https://sandu17767.github.io/Revenue-Product-Performance-Analysis/)
+👉 **[View Interactive Dashboard](https://sandu17767.github.io/Revenue-Product-Performance-Analysis/)**
+
+
 
 > **One-line summary:**
 > Multi-table revenue and product performance analysis on 96,478 orders across a Brazilian e-commerce marketplace —
