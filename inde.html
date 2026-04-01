@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olist Revenue Dashboard — Sanduni</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e94560;
+  }
+  .header h1 { font-size: 17px; color: #fff; font-weight: 700; }
+  .header p { font-size: 11px; color: #718096; margin-top: 2px; }
+  .header-right { font-size: 11px; color: #718096; text-align: right; line-height: 1.8; }
+  .header-right span { color: #e94560; font-weight: 600; }
+
+  /* MAIN GRID */
+  .dashboard {
+    padding: 16px;
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    gap: 14px;
+  }
+
+  /* ROW 1 — KPI CARDS */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .kpi {
+    background: #16213e;
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-top: 3px solid #e94560;
+  }
+  .kpi.blue   { border-top-color: #4299e1; }
+  .kpi.green  { border-top-color: #48bb78; }
+  .kpi.purple { border-top-color: #9f7aea; }
+  .kpi.orange { border-top-color: #ed8936; }
+  .kpi.teal   { border-top-color: #4fd1c5; }
+  .kpi-label { font-size: 9px; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-value { font-size: 20px; font-weight: 700; color: #fff; line-height: 1.1; }
+  .kpi-sub   { font-size: 10px; color: #48bb78; margin-top: 4px; }
+  .kpi-sub.warn { color: #fc8181; }
+  .kpi-sub.muted { color: #718096; }
+
+  /* ROW 2 — REVENUE TREND + CATEGORY BAR */
+  .row2 {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 14px;
+  }
+
+  /* ROW 3 — HEATMAP + GROWTH */
+  .row3 {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr;
+    gap: 14px;
+  }
+
+  /* ROW 4 — SCATTER + SELLER BAR + INSIGHT */
+  .row4 {
+    display: grid;
+    grid-template-columns: 1.6fr 1.4fr 1fr;
+    gap: 14px;
+  }
+
+  /* CARD */
+  .card {
+    background: #16213e;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 2px;
+  }
+  .card-sub {
+    font-size: 10px;
+    color: #4a5568;
+    margin-bottom: 12px;
+  }
+
+  /* HEATMAP */
+  .heatmap { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 10px; }
+  .heatmap th { padding: 4px 2px; text-align: center; color: #4a5568; font-weight: 500; font-size: 9px; text-transform: uppercase; }
+  .heatmap td { padding: 8px 4px; text-align: center; border-radius: 4px; font-weight: 600; font-size: 9px; }
+  .heatmap tr td:first-child { color: #718096; font-size: 10px; font-weight: 600; text-align: right; padding-right: 8px; background: transparent !important; }
+
+  /* INSIGHT CARD */
+  .insight-card {
+    background: #16213e;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .insight-item { border-left: 3px solid #e94560; padding-left: 10px; }
+  .insight-item.blue   { border-left-color: #4299e1; }
+  .insight-item.green  { border-left-color: #48bb78; }
+  .insight-item.orange { border-left-color: #ed8936; }
+  .insight-head { font-size: 10px; font-weight: 700; color: #e2e8f0; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .insight-body { font-size: 10px; color: #a0aec0; line-height: 1.5; }
+  .insight-body strong { color: #fff; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 10px;
+    font-size: 10px;
+    color: #2d3748;
+    border-top: 1px solid #1a202c;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📊 Revenue & Product Performance — Olist Brazilian E-Commerce (2017–2018)</h1>
+    <p>96,478 Delivered Orders &nbsp;·&nbsp; BigQuery Standard SQL &nbsp;·&nbsp; Power BI</p>
+  </div>
+  <div class="header-right">
+    Analyst: <span>Sanduni</span><br>
+    Data: Sept 2016 – Aug 2018
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- ROW 1: KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">R$15.4M</div>
+      <div class="kpi-sub">↑ +75% YoY Jan–Aug</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Delivered Orders</div>
+      <div class="kpi-value">96,478</div>
+      <div class="kpi-sub muted">of 99,441 total</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Avg Order Value</div>
+      <div class="kpi-value">R$134</div>
+      <div class="kpi-sub warn">Flat 2 years ⚠️</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Basket Size</div>
+      <div class="kpi-value">1.14</div>
+      <div class="kpi-sub warn">vs Amazon 2–3</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">Top Category</div>
+      <div class="kpi-value" style="font-size:13px;margin-top:3px;">Health & Beauty</div>
+      <div class="kpi-sub">R$1.4M · +60% YoY</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Peak Month</div>
+      <div class="kpi-value" style="font-size:15px;margin-top:2px;">Nov 2017</div>
+      <div class="kpi-sub">R$1.15M · 42% Q4</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: TREND + CATEGORY -->
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Monthly Revenue Trend — 2017 vs 2018</div>
+      <div class="card-sub">LAG(12) YoY window function · BRL · 2018 data Jan–Aug only</div>
+      <canvas id="revenueChart" height="130"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Top 10 Categories by Revenue</div>
+      <div class="card-sub">RANK() window function · Delivered orders only</div>
+      <canvas id="categoryBar" height="130"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 3: HEATMAP + GROWTH -->
+  <div class="row3">
+    <div class="card">
+      <div class="card-title">Seasonality Heatmap — Revenue by Month</div>
+      <div class="card-sub">Conditional aggregation pivot · Darker = higher revenue · November = critical peak</div>
+      <table class="heatmap" id="heatmapTable"></table>
+    </div>
+    <div class="card">
+      <div class="card-title">YoY Category Growth Rate</div>
+      <div class="card-sub">2017→2018 · Min R$10K base filter applied</div>
+      <canvas id="growthBar" height="148"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 4: SCATTER + SELLER BAR + INSIGHTS -->
+  <div class="row4">
+    <div class="card">
+      <div class="card-title">Seller Quality vs Revenue — Top 20</div>
+      <div class="card-sub">Dual RANK() · Red = quality risk · Green = balanced</div>
+      <canvas id="scatterChart" height="155"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Top 20 Sellers by Revenue</div>
+      <div class="card-sub">Colour = review score · Red &lt;3.7 · Amber 3.7–4.1 · Green 4.1+</div>
+      <canvas id="sellerBar" height="155"></canvas>
+    </div>
+    <div class="insight-card">
+      <div class="card-title" style="margin-bottom:8px;">Key Business Insights</div>
+      <div class="insight-item">
+        <div class="insight-head">Black Friday = 42% of Year</div>
+        <div class="insight-body">Nov 2017 hit <strong>R$1.15M</strong> — 53% above Oct. Q4 alone = <strong>42% of annual revenue</strong>.</div>
+      </div>
+      <div class="insight-item orange">
+        <div class="insight-head">AOV Flat — Upside Untapped</div>
+        <div class="insight-body">R$10 AOV increase × 96K orders = <strong>R$965K extra</strong> from existing customers.</div>
+      </div>
+      <div class="insight-item blue">
+        <div class="insight-head">Home Improvement Cluster</div>
+        <div class="insight-body">3 categories surging together — <strong>macro trend</strong>, not coincidence. +509%, +286%, +148%.</div>
+      </div>
+      <div class="insight-item green">
+        <div class="insight-head">Quality Risk at Scale</div>
+        <div class="insight-body">Seller #2: <strong>R$239K revenue, 3.35 score</strong>. 1,366 bad experiences = platform trust erosion.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Olist Revenue & Product Performance Analysis &nbsp;·&nbsp; Sanduni &nbsp;·&nbsp; BigQuery Standard SQL + Power BI
+</div>
+
+<script>
+// ── REVENUE LINE ──
+new Chart(document.getElementById('revenueChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      {
+        label: '2017', borderColor: '#4299e1', backgroundColor: 'rgba(66,153,225,0.07)',
+        data: [127482,271239,414331,390812,566851,490050,566299,645832,701077,751117,1153364,843078],
+        tension: 0.4, pointRadius: 3, fill: true
+      },
+      {
+        label: '2018', borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.07)',
+        data: [1077887,966168,1120598,1132879,1128775,1011978,1027807,985492,null,null,null,null],
+        tension: 0.4, pointRadius: 3, fill: true
+      }
+    ]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: '#718096', font: { size: 10 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: c => c.dataset.label + ': R$' + (c.raw||0).toLocaleString() } }
+    },
+    scales: {
+      x: { ticks: { color: '#4a5568', font: { size: 9 } }, grid: { color: '#1a202c' } },
+      y: { ticks: { color: '#4a5568', font: { size: 9 }, callback: v => 'R$'+(v/1000).toFixed(0)+'K' }, grid: { color: '#1a202c' } }
+    }
+  }
+});
+
+// ── CATEGORY BAR ──
+new Chart(document.getElementById('categoryBar'), {
+  type: 'bar',
+  data: {
+    labels: ['Health & Beauty','Watches & Gifts','Bed Bath Table','Sports Leisure','Computers Acc.','Furniture','Housewares','Cool Stuff','Auto','Garden Tools'],
+    datasets: [{
+      data: [1412090,1264333,1225209,1118257,1032724,880330,758392,691681,669455,567146],
+      backgroundColor: ['#e94560','#ed8936','#ecc94b','#48bb78','#4299e1','#9f7aea','#ed64a6','#4fd1c5','#f6ad55','#68d391'],
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#4a5568', font: { size: 9 }, callback: v => 'R$'+(v/1000).toFixed(0)+'K' }, grid: { color: '#1a202c' } },
+      y: { ticks: { color: '#a0aec0', font: { size: 9 } }, grid: { display: false } }
+    }
+  }
+});
+
+// ── HEATMAP ──
+const heatData = {
+  '2017': [127482,271239,414331,390812,566851,490050,566299,645832,701077,751117,1153364,843078],
+  '2018': [1077887,966168,1120598,1132879,1128775,1011978,1027807,985492,null,null,null,null]
+};
+const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const maxV = 1153364;
+function heatColor(v) {
+  if (!v) return 'background:#0f1117;color:#2d3748;';
+  const r = v/maxV;
+  if (r > 0.85) return 'background:#e94560;color:#fff;';
+  if (r > 0.60) return 'background:#c05621;color:#fff;';
+  if (r > 0.40) return 'background:#2b6cb0;color:#fff;';
+  if (r > 0.20) return 'background:#2c5282;color:#bee3f8;';
+  return 'background:#1a365d;color:#90cdf4;';
+}
+let tbl = '<tr><th></th>' + mNames.map(m=>`<th>${m}</th>`).join('') + '</tr>';
+['2017','2018'].forEach(yr => {
+  tbl += `<tr><td>${yr}</td>`;
+  heatData[yr].forEach(v => {
+    const s = heatColor(v);
+    const d = v ? 'R$'+(v/1000).toFixed(0)+'K' : '–';
+    tbl += `<td style="${s}">${d}</td>`;
+  });
+  tbl += '</tr>';
+});
+document.getElementById('heatmapTable').innerHTML = tbl;
+
+// ── GROWTH BAR ──
+new Chart(document.getElementById('growthBar'), {
+  type: 'bar',
+  data: {
+    labels: ['Const. Tools','Appliances 2','Home Const.','Electronics','Baby','Housewares','Health & Beauty','Watches','Computers Acc.','Auto'],
+    datasets: [{
+      data: [509.2,285.7,147.8,86,68.2,75,60.2,46.5,30.4,48.3],
+      backgroundColor: [509.2,285.7,147.8,86,68.2,75,60.2,46.5,30.4,48.3].map(v =>
+        v > 200 ? '#e94560' : v > 80 ? '#ed8936' : '#48bb78'),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#4a5568', font: { size: 9 }, callback: v => v+'%' }, grid: { color: '#1a202c' } },
+      y: { ticks: { color: '#a0aec0', font: { size: 9 } }, grid: { display: false } }
+    }
+  }
+});
+
+// ── SCATTER ──
+const sellers = [
+  {x:4.14,y:247007},{x:3.35,y:239645},{x:3.83,y:234121},{x:4.13,y:230797},
+  {x:4.37,y:200834},{x:4.08,y:187577},{x:3.87,y:173727},{x:4.36,y:171974},
+  {x:4.27,y:160909},{x:4.09,y:156699},{x:3.95,y:148421},{x:3.99,y:142365},
+  {x:4.26,y:134163},{x:4.25,y:130413},{x:4.15,y:128591},{x:4.27,y:126878},
+  {x:4.02,y:124703},{x:4.02,y:120934},{x:4.15,y:115577},{x:4.45,y:83031}
+];
+new Chart(document.getElementById('scatterChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      data: sellers,
+      backgroundColor: sellers.map(d => d.x<3.7?'rgba(233,69,96,0.85)':d.x>=4.3?'rgba(72,187,120,0.85)':'rgba(66,153,225,0.7)'),
+      pointRadius: 7, pointHoverRadius: 9
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => [`Rev: R$${sellers[c.dataIndex].y.toLocaleString()}`, `Score: ${sellers[c.dataIndex].x}⭐`] } }
+    },
+    scales: {
+      x: {
+        min: 3.0, max: 4.7,
+        title: { display: true, text: 'Review Score', color: '#4a5568', font: { size: 9 } },
+        ticks: { color: '#4a5568', font: { size: 9 } }, grid: { color: '#1a202c' }
+      },
+      y: {
+        title: { display: true, text: 'Revenue (BRL)', color: '#4a5568', font: { size: 9 } },
+        ticks: { color: '#4a5568', font: { size: 9 }, callback: v => 'R$'+(v/1000).toFixed(0)+'K' }, grid: { color: '#1a202c' }
+      }
+    }
+  }
+});
+
+// ── SELLER BAR ──
+new Chart(document.getElementById('sellerBar'), {
+  type: 'bar',
+  data: {
+    labels: sellers.map((_,i) => '#'+(i+1)),
+    datasets: [{
+      data: sellers.map(d=>d.y),
+      backgroundColor: sellers.map(d => d.x<3.7?'#e94560':d.x<4.1?'#ed8936':'#48bb78'),
+      borderRadius: 2
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#4a5568', font: { size: 8 } }, grid: { display: false } },
+      y: { ticks: { color: '#4a5568', font: { size: 9 }, callback: v => 'R$'+(v/1000).toFixed(0)+'K' }, grid: { color: '#1a202c' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
