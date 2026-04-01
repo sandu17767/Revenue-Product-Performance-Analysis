@@ -7,6 +7,9 @@
 
 👉 **[View Interactive Dashboard](https://sandu17767.github.io/Revenue-Product-Performance-Analysis/)**
 
+### 🔹 One-Page Executive Dashboard
+👉 [View Executive Dashboard](https://sandu17767.github.io/Revenue-Product-Performance-Analysis/dashboard_onepage.html)
+
 
 
 > **One-line summary:**
